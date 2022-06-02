@@ -3,7 +3,7 @@
 library(DESeq2)
 
 #read in read count data (see, "RawCounts_Mus.csv" file)
-data <- read.csv("~/Family Documents/Touba/Github/toubawarsi.github.io/Rnaseq/1 - Data_ RawCounts_Mus.csv", header = TRUE, row.names = NULL)
+data <- read.csv("~/path/1 - Data_ RawCounts_Mus.csv", header = TRUE, row.names = NULL)
 
 #making gene names column into row names so have a dataframe of just read counts
 rownames(data) = make.names(data$Gene, unique=TRUE)
@@ -99,6 +99,7 @@ detectGroups(colnames(expressiondata))
 dist2 <- function(x, ...)   
   as.dist(1-cor(t(x), method="pearson"))
 
+
 #install.packages("gplots")
 library(gplots)
 
@@ -155,7 +156,7 @@ summary(res)
 #creating MA Plot to see significant DE genes, above and below 0 at y-axis are
 #up- and down-regulated genes respectively, and grey are not significant
 #while blue is signifcant DE genes 
-DESeq2:: plotMA(res)
+DESeq2:: plotMA(res, main="MA Plot to Visualize Significant Up- and Down-Regulated Differentially Expressed Genes")
 
 #creating volcano plot, showing significant genes in the broad sense
 library(dplyr)
@@ -168,8 +169,12 @@ resvolplot[which(abs(resvolplot$log2FoldChange)<1.0), "Significant"] = "Not Sig"
 library(ggplot2)
 #volcano plot showing significantly expressed genes using lfc and adj p-value
 #-log10 of padj is necessary to scale it
-ggplot(resvolplot,aes(log2FoldChange, -log10(padj))) + geom_point(aes(col=Significant)) +
-  scale_color_manual(values=c("red","black"))
+ggplot(resvolplot,aes(log2FoldChange, -log10(padj))) + 
+  geom_point(aes(col=Significant)) +
+  scale_color_manual(values=c("red","black")) +
+  labs(title="Volcano Plot Showing Significantly Expressed Genes using Log-Fold Change
+       and Adjusted p-value") +
+  theme(plot.title = element_text(hjust = 0.5))
 #FYI: plot without -log10 adjustment
 #ggplot(resvolplot,aes(log2FoldChange, padj)) + geom_point(aes(col=Significant)) +
 #  scale_color_manual(values=c("red","black"))
@@ -180,7 +185,8 @@ ggplot(resvolplot,aes(log2FoldChange, -log10(padj))) + geom_point(aes(col=Signif
 #gene expressed between the two groups
 res <- res[order(abs(res$log2FoldChange), decreasing = TRUE),]
 topGene <- rownames(res)[1]
-plotCounts(dds, gene=topGene, intgroup=c("Genotype","Trt"))
+plotCounts(dds, gene=topGene, intgroup=c("Genotype","Trt"), 
+           main="Irf4 - Gene with the Highest Fold Change")
 
 
 #Gene Ontology Analysis
@@ -335,4 +341,3 @@ Kegg_res <- gage(exprs = foldchanges,
 View(as.data.frame(Kegg_res$greater))
 #View down-regulated results
 View(as.data.frame(Kegg_res$less))
-
